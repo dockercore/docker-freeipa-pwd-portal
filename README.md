@@ -7,6 +7,10 @@ A turnkey self service Free IPA password portal ready for most deployment situat
 4. Optional ReCaptcha support.
 5. Auto-installation of the Free IPA instance's certificate, the password portal's certificate (or generation of a self-signed certificate if none is provided), and the password portal's keytab.
 
+|CAUTION!|
+|--------|
+|The freeipa-pwd-portal war is not currently available in any public artifact repository. Until it is, building this image from source requires manually building the war from the [freeipa-pwd-portal source](https://github.com/xetus-oss/freeipa-pwd-portal) and placing it in this project's root directory before building the image.|
+
 # Quick Start
 
 The command below will setup a freeipa-pwd-portal container with ReCaptcha disabled and a self-signed certificate:
