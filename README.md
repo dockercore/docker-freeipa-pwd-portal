@@ -67,7 +67,7 @@ docker run \
 -e SMTP_FROM="freeipa-pwd-portal@example.com" \
 -e FREEIPA_REALM="EXAMPLE.COM" \
 -e FREEIPA_HOSTNAME="freeipa.example.com" \
--e FREEIPA_PWD_PORTAL_PRINCIPAL="host/freeipa-pwd-portal.example.com@INTERNAL.XETUS.COM" \
+-e FREEIPA_PWD_PORTAL_PRINCIPAL="host/freeipa-pwd-portal.example.com@EXAMPLE.COM" \
 -e RECAPTCHA_PRIVATE_KEY="your_private_key" \
 -e RECAPTCHA_PUBLIC_KEY="your_public_key" \
 -e FREEIPA_SSL_CERT=/data/your_freeipa_instance_cert.cer \
@@ -88,7 +88,7 @@ docker run \
 -e SMTP_FROM="freeipa-pwd-portal@example.com" \
 -e FREEIPA_REALM="EXAMPLE.COM" \
 -e FREEIPA_HOSTNAME="freeipa.example.com" \
--e FREEIPA_PWD_PORTAL_PRINCIPAL="host/freeipa-pwd-portal.example.com@INTERNAL.XETUS.COM" \
+-e FREEIPA_PWD_PORTAL_PRINCIPAL="host/freeipa-pwd-portal.example.com@EXAMPLE.COM" \
 -e FREEIPA_SSL_CERT=/data/your_freeipa_instance_cert.cer \
 -e FREEIPA_PWD_PORTAL_SSL_CERT=/data/your_freeipa_pwd_portal_cert.cer \
 -e KEYTAB=/data/your_pwd_portal_keytab \
