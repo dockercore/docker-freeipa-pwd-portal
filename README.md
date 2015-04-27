@@ -5,7 +5,7 @@ A turnkey self service Free IPA password portal ready for most deployment situat
 2. The ability to either change an expiring password (if the password is known) or to reset  password (if the password is not known).
 2. Password reset request emails using the email address configured for the account in the Free IPA instance and with configurable request timeouts.
 4. Optional ReCaptcha support.
-5. Auto-installation of the Free IPA instance's certificate, the password portal's certificate (or generation of a self-signed certificate if none is provided), and the password portal's keytab.
+5. Auto-installation of the Free IPA instance's certificate, the keystore containing the password portal's certificate (or generation of a self-signed certificate and keystore if none is provided), and the password portal's keytab.
 
 |CAUTION|
 |--------|
@@ -46,8 +46,10 @@ xetusoss/freeipa-pwd-portal
 * __RECAPTCHA_PUBLIC_KEY__: The recaptcha public key to use. ReCaptcha will be disabled for the site if none is supplied.
 * __DISABLE_RECAPTCHA__: Force disable ReCaptcha support. If either the RECAPTCHA_PRIVATE_KEY or _RECAPTCHA_PUBLIC_KEY options are ommitted, ReCaptcha support will be disabled regardless of the value for DISABLE_RECAPTCHA. Defaults to false.
 * __PASSWORD_RESET_TIME_LIMIT__: The time limit before which the generated link in password reset emails will expire in seconds. Defaults to 900 seconds (15 minutes).
-* __FREEIPA_PWD_PORTAL_SSL_CERT__: The SSL certificate the password portal should use for serving HTTPS. If none is supplied, a self-signed SSL certificate will be generated and used.
-* __FREEIPA_SSL_CERT__: The SSL certificate for the FreeIPA instance with which the password portal will be communicating. This will be added to the container's Java keystore. This should be placed somewhere in the /data volume mount prior to running the container referenced relative to the container, not the host.
+* __FREEIPA_PWD_PORTAL_KEYSTORE__: The java keystore containing the SSL certificate the password portal should use for serving HTTPS. If none is supplied, a self-signed SSL certificate will be generated in a newly generated keystore, and both will be used to serve HTTPS. This should be mounted somewhere in the `/data` volume mount prior to running the container.
+* __FREEIPA_PWD_PORTAL_KEY_ALIAS__: The alias for the SSL certificate in the supplied keystore.
+* __FREEIPA_PWD_PORTAL_KEY_PASS__: The password for both the supplied keystore and the contained SSL certificate (*FREEIPA_PWD_PORTAL*).
+* __FREEIPA_SSL_CERT__: The SSL certificate for the FreeIPA instance with which the password portal will be communicating. This will be added to the container's JRE keystore. This should be placed somewhere in the /data volume mount prior to running the container.
 * __KEYTAB__: The path within the Docker container to the valid password portal's Kerberos keytab. This should be placed somewhere in the /data volume mount prior to running the container referenced relative to the container, not the host. For details on creating the Free IPA host account, please see [the documentation for the GitHub account](https://github.com/xetus-oss/freeipa-pwd-portal).
 
 Note that by default the web application will log to /var/log/freeipa-pwd-portal/application.log.
@@ -75,7 +77,7 @@ docker run \
 xetusoss/freeipa-pwd-portal
 ```
 
-(2) Supplying a valid password portal SSL certificate:
+(2) Supplying a valid password portal keystore containing the valid SSL certificate:
 
 ```
 docker run \
@@ -90,7 +92,9 @@ docker run \
 -e FREEIPA_HOSTNAME="freeipa.example.com" \
 -e FREEIPA_PWD_PORTAL_PRINCIPAL="host/freeipa-pwd-portal.example.com@EXAMPLE.COM" \
 -e FREEIPA_SSL_CERT=/data/your_freeipa_instance_cert.cer \
--e FREEIPA_PWD_PORTAL_SSL_CERT=/data/your_freeipa_pwd_portal_cert.cer \
+-e FREEIPA_PWD_PORTAL_KEYSTORE=/data/private.keystore \
+-e FREEIPA_PWD_PORTAL_KEY_PASS=somepass \
+-e FREEIPA_PWD_PORTAL_KEY_ALIAS="freeipa-pwd-portal" \
 -e KEYTAB=/data/your_pwd_portal_keytab \
 xetusoss/freeipa-pwd-portal
 ```

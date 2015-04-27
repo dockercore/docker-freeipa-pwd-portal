@@ -9,17 +9,24 @@
 export FREEIPA_REALM=${FREEIPA_REALM:-EXAMPLE.COM}
 export FREEIPA_REALM_LOWERCASE=${FREEIPA_REALM,,}
 export FREEIPA_HOSTNAME=${FREEIPA_HOSTNAME:-freeipa.example.com}
-export STORE_AND_CERT_PASS=${STORE_AND_CERT_PASS:-changeit}
-export CERT_ALIAS=${CERT_ALIAS:-freeipa-pwd-portal}
 
-KEYSTORE_PATH="$JAVA_HOME/jre/lib/security/cacerts"
+export FREEIPA_PWD_PORTAL_KEYSTORE=${FREEIPA_PWD_PORTAL_KEYSTORE:-/data/freeipa-pwd-portal.keystore}
+export FREEIPA_PWD_PORTAL_KEY_PASS=${FREEIPA_PWD_PORTAL_KEY_PASS:-changeit}
+export FREEIPA_PWD_PORTAL_KEY_ALIAS=${FREEIPA_PWD_PORTAL_KEY_ALIAS:-freeipa-pwd-portal}
+
+JRE_KEYSTORE_PATH="$JAVA_HOME/jre/lib/security/cacerts"
+JRE_KEYSTORE_PASS="changeit"
 DATA_PATH=/data
 
 function create_config {
-  echo "Generating a $1 config file and backing it up to $3"
-  mkdir -p "$(dirname "$3")"
-  eval "echo \"`cat "$2"`\"" > "$3"
-  rm "$2"
+  if [[ -e "$2" && ! -f "$3" ]]; then
+    echo "Generating a $1 config file and backing it up to $3"
+    mkdir -p "$(dirname "$3")"
+    eval "echo \"`cat "$2"`\"" > "$3"
+    rm "$2"
+  else
+    echo "$1 template config file was already found; skipping"
+  fi
 }
 
 #
@@ -30,7 +37,9 @@ create_config "Krb5" /default_krb5.conf /etc/iris-template/krb5.conf
 create_config "JAAS" /default_jaas.conf /etc/iris-template/jaas.conf
 create_config "site" /default_siteconfig.groovy \
                      /etc/freeipa-pwd-portal-template/siteconfig.groovy
-mv /default_logback.groovy /etc/freeipa-pwd-portal-template/logback.groovy
+
+[[ ! -f /default_logback.groovy ]] ||
+  mv /default_logback.groovy /etc/freeipa-pwd-portal-template/logback.groovy
 
 source /data_dirs.env
 for datadir in "${DATA_DIRS[@]}"; do
@@ -46,60 +55,47 @@ done
 # Set the freeipa-pwd-portal siteconfig location as a permanent 
 # environment variable
 #
-echo "com.xetus.freeipa.pwdportal.config=\
+[[ -n "$(cat /etc/environment | grep "com.xetus.freeipa.pwdportal.config")" ]] ||
+  echo "com.xetus.freeipa.pwdportal.config=\
 /etc/freeipa-pwd-portal" >> /etc/environment
-
-#
-#   KEYTAB - the keytab for authenticating using the
-#   configured Kerberos Principal
-#
-if [[ -n "$KEYTAB" && -e "$KEYTAB" ]]; then
-  echo "Installing the keytab file..."
-  cp "$KEYTAB" /etc/iris/keytab
-fi
 
 #
 #   FREEIPA_SSL_CERT - the FreeIPA instance's certificate
 #
 if [[ -n "$FREEIPA_SSL_CERT" && -e "$FREEIPA_SSL_CERT" ]]; then
-  echo "Adding the FreeIPA instance's SSL certificate to the keystore..."
+  echo "Adding the FreeIPA instance's SSL certificate to the JRE keystore..."
   keytool -import -trustcacerts -noprompt \
           -alias freeipa \
           -file "$FREEIPA_SSL_CERT" \
-          -keystore "$KEYSTORE_PATH" \
-          -storepass "$STORE_AND_CERT_PASS"
+          -keystore "$JRE_KEYSTORE_PATH" \
+          -storepass "$JRE_KEYSTORE_PASS"
 fi
 
 #
-# Create a java keystore and add the supplied certificate to the keystore. If 
-# no certificate is supplied then generate a self-signed cert
+# If no keystore is supplied containing the freeipa-pwd-portal private and public
+# keys then generate a self-signed cert
 #
-#   FREEIPA_PWD_PORTAL_SSL_CERT - the certificate for the FreeIPA password 
-#   portal
+#   FREEIPA_PWD_PORTAL_KEYSTORE - the keystore containing the freeipa-pwd-portal
+# cert
+#   FREEIPA_PWD_PORTAL_CERT_ALIAS - the alias for the certificate
+#   FREEIPA_PWD_PORTAL_KEY_PASS - the password to use for the keystore and certificate
 #
-if [[ -n "$FREEIPA_PWD_PORTAL_SSL_CERT" && 
-      -e "$FREEIPA_PWD_PORTAL_SSL_CERT" ]]; then
-  echo "Adding the supplied password portal's SSL certificate to the keystore..."
-  keytool -import -trustcacerts -noprompt \
-          -alias "$CERT_ALIAS" \
-          -file "$FREEIPA_PWD_PORTAL_SSL_CERT" \
-          -keystore "$KEYSTORE_PATH" \
-          -storepass "$STORE_AND_CERT_PASS"
-else
-  echo "No SSL certificate was supplied for the password portal; generating a \
-temporary one now..."
+if [[ ! -n "$FREEIPA_PWD_PORTAL_KEYSTORE" ||
+      ! -e "$FREEIPA_PWD_PORTAL_KEYSTORE" ]]; then
+  echo "No keystore was supplied with the password portal's certificate; \
+generating a temporary one now..."
   keytool -genkey -noprompt -trustcacerts \
           -keyalg RSA \
-          -alias "$CERT_ALIAS" \
+          -alias "$FREEIPA_PWD_PORTAL_KEY_ALIAS" \
           -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown" \
-          -keypass "$STORE_AND_CERT_PASS" \
-          -keystore $KEYSTORE_PATH \
-          -storepass "$STORE_AND_CERT_PASS"
+          -keypass "$FREEIPA_PWD_PORTAL_KEY_PASS" \
+          -keystore "$FREEIPA_PWD_PORTAL_KEYSTORE" \
+          -storepass "$FREEIPA_PWD_PORTAL_KEY_PASS"
 fi
 
 echo "Starting the Free IPA Password Portal..."
 java -jar /opt/freeipa-pwd-portal/freeipa-pwd-portal-1.0-SNAPSHOT.war \
      -p 443 \
-     -kf "$KEYSTORE_PATH" \
-     -ka "$CERT_ALIAS" \
-     -kp "$STORE_AND_CERT_PASS"
+     -kf "$FREEIPA_PWD_PORTAL_KEYSTORE" \
+     -ka "$FREEIPA_PWD_PORTAL_KEY_ALIAS" \
+     -kp "$FREEIPA_PWD_PORTAL_KEY_PASS"
