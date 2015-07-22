@@ -51,6 +51,7 @@ xetusoss/freeipa-pwd-portal
 * __FREEIPA_PWD_PORTAL_KEY_PASS__: The password for both the supplied keystore and the contained SSL certificate (*FREEIPA_PWD_PORTAL*).
 * __FREEIPA_SSL_CERT__: The SSL certificate for the FreeIPA instance with which the password portal will be communicating. This will be added to the container's JRE keystore. This should be placed somewhere in the /data volume mount prior to running the container.
 * __KEYTAB__: The path within the Docker container to the valid password portal's Kerberos keytab. This should be placed somewhere in the /data volume mount prior to running the container referenced relative to the container, not the host. For details on creating the Free IPA host account, please see [the documentation for the GitHub account](https://github.com/xetus-oss/freeipa-pwd-portal).
+* __X_FORWARDED_FOR_HEADER__: The key for the request header from which to extract the remote user's IP, in the event the password portal is being served from behind a proxy. If no header is found, the value for request.getRemoteAddr() will be used instead (for Google Recpatcha). Defaults to "X-Forwarded-To".
 
 Note that by default the web application will log to /var/log/freeipa-pwd-portal/application.log.
 

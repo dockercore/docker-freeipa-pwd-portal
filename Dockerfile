@@ -1,4 +1,4 @@
-FROM dockerfile/java:oracle-java8
+FROM java:8
 MAINTAINER Theo Meneau <tmeneau@xetus.com>
 
 #
@@ -37,6 +37,6 @@ VOLUME ["/data"]
 #
 # Expose port 443
 #
-EXPOSE 443/tcp 443/udp
+EXPOSE 443/tcp
 
 ENTRYPOINT ["/run.bash"]

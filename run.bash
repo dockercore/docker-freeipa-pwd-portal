@@ -14,7 +14,7 @@ export FREEIPA_PWD_PORTAL_KEYSTORE=${FREEIPA_PWD_PORTAL_KEYSTORE:-/data/freeipa-
 export FREEIPA_PWD_PORTAL_KEY_PASS=${FREEIPA_PWD_PORTAL_KEY_PASS:-changeit}
 export FREEIPA_PWD_PORTAL_KEY_ALIAS=${FREEIPA_PWD_PORTAL_KEY_ALIAS:-freeipa-pwd-portal}
 
-JRE_KEYSTORE_PATH="$JAVA_HOME/jre/lib/security/cacerts"
+JRE_KEYSTORE_PATH="/etc/ssl/certs/java/cacerts"
 JRE_KEYSTORE_PASS="changeit"
 DATA_PATH=/data
 

@@ -12,6 +12,7 @@
 recaptchaPrivateKey = "\"${RECAPTCHA_PRIVATE_KEY}\""
 recaptchaPublicKey = "\"${RECAPTCHA_PUBLIC_KEY}\""
 disableRecaptcha = ${DISABLE_RECAPTCHA:-false}
+xForwardedForHeader = "\"${X_FORWARDED_FOR_HEADER:-X-Forwarded-For}\""
 
 if (recaptchaPrivateKey == \"\" || recaptchaPublicKey == \"\") {
   disableRecaptcha = true
