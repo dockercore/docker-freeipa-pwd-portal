@@ -2,11 +2,12 @@ FROM java:8
 MAINTAINER Theo Meneau <tmeneau@xetus.com>
 
 #
-# Copy the war into the /data directory
-# TODO: retrieve the war from an artifact repository instead
-# and allow the specific version to retrieve to be configurable
+# Download the freeipa-pwd-portal war and copy  
+# it into the /opt directory
 #
-ADD freeipa-pwd-portal-1.0-SNAPSHOT.war /opt/freeipa-pwd-portal/
+RUN mkdir -p /opt/freeipa-pwd-portal/ && \
+    wget -O /opt/freeipa-pwd-portal/freeipa-pwd-portal.war \
+    "http://pubshare.corp.xetus.com/Artifacts/freeipa-pwd-portal/freeipa-pwd-portal-1.0-SNAPSHOT.war"
 
 #
 # Perform the data directory initialization

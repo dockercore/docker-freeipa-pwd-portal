@@ -94,7 +94,7 @@ generating a temporary one now..."
 fi
 
 echo "Starting the Free IPA Password Portal..."
-java -jar /opt/freeipa-pwd-portal/freeipa-pwd-portal-1.0-SNAPSHOT.war \
+java -jar /opt/freeipa-pwd-portal/freeipa-pwd-portal.war \
      -p 443 \
      -kf "$FREEIPA_PWD_PORTAL_KEYSTORE" \
      -ka "$FREEIPA_PWD_PORTAL_KEY_ALIAS" \
