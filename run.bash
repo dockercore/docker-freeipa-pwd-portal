@@ -19,37 +19,24 @@ JRE_KEYSTORE_PASS="changeit"
 DATA_PATH=/data
 
 function create_config {
-  if [[ -e "$2" && ! -f "$3" ]]; then
-    echo "Generating a $1 config file and backing it up to $3"
-    mkdir -p "$(dirname "$3")"
-    eval "echo \"`cat "$2"`\"" > "$3"
-    rm "$2"
-  else
-    echo "$1 template config file was already found; skipping"
-  fi
+  echo "Generating $2"
+  mkdir -p "data/$(dirname "$2")"
+  eval "echo \"`cat "$1"`\"" > "$2"
+  rm "$1"
 }
 
 #
 # Generate the configuration file templates from the passed environment
 # variables
 #
-create_config "Krb5" /default_krb5.conf /etc/iris-template/krb5.conf
-create_config "JAAS" /default_jaas.conf /etc/iris-template/jaas.conf
-create_config "site" /default_siteconfig.groovy \
-                     /etc/freeipa-pwd-portal-template/siteconfig.groovy
+create_config /default_krb5.conf /etc/iris/krb5.conf
+create_config /default_jaas.conf /etc/iris/jaas.conf
+create_config /default_siteconfig.groovy \
+                     /etc/freeipa-pwd-portal/siteconfig.groovy
 
-[[ ! -f /default_logback.groovy ]] ||
-  mv /default_logback.groovy /etc/freeipa-pwd-portal-template/logback.groovy
+[[ -e /etc/freeipa-pwd-portal/logback.groovy ]] ||
+  mv /default_logback.groovy /etc/freeipa-pwd-portal/logback.groovy
 
-source /data_dirs.env
-for datadir in "${DATA_DIRS[@]}"; do
-  if [ ! -e "${DATA_PATH}/${datadir#/*}" ]
-  then
-    echo "Installing ${datadir}"
-    mkdir -p ${DATA_PATH}/${datadir#/*}
-    cp -pr ${datadir}-template/* ${DATA_PATH}/${datadir#/*}/
-  fi
-done
 
 #
 # Set the freeipa-pwd-portal siteconfig location as a permanent 
